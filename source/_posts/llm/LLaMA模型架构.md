@@ -1,3 +1,4 @@
+
 ---
 title: LLaMA的模型架构——RMSNorm/SwiGLU/RoPE/Transformer
 date: 2023-05-08 21:04:50
@@ -39,7 +40,7 @@ RMSNorm计算公式: $y = \frac{x}{\sqrt{\frac{1}{n}\sum_{i=1}^{n}x_i^2+\epsilon
 2. GeLU:
 $G e L U=x \Phi(x)=x \int_{-\infty}^x \frac{1}{\sqrt{2 \pi}} e^{-\frac{t^2}{2}} d t=x \cdot \frac{1}{2}\left[1+\operatorname{erf}\left(\frac{x}{\sqrt{2}}\right)\right]$
 
-	其中erf为误差函数
+    其中erf为误差函数
 3. Swish激活函数：
 Swish $=x \cdot \operatorname{sigmoid}(\beta x)$
 激活函数就是对x乘以一些数，以对某些值进行约束
@@ -112,7 +113,7 @@ class SwiGLU(tf.keras.layers.Layer):
 在位置编码上，删除了绝对位置嵌入，而在网络的每一层增加了苏剑林等人(2021)提出的旋转位置嵌入(RoPE)，其思想是采用绝对位置编码的形式，实现相对位置编码
 
 
-RoPE主要借助了复数的思想，为了引入复数，首先假设了在加入位置信息之前，原有的编码向量是二维行向量![q_m](https://latex.codecogs.com/gif.latex?q_m)和![k_n](https://latex.codecogs.com/gif.latex?k_n)，其中![m](https://latex.codecogs.com/gif.latex?m)和![n](https://latex.codecogs.com/gif.latex?n)是绝对位置，现在需要构造一个变换，将![m](https://latex.codecogs.com/gif.latex?m)和![n](https://latex.codecogs.com/gif.latex?n)引入到![q_m](https://latex.codecogs.com/gif.latex?q_m)和![k_n](https://latex.codecogs.com/gif.latex?k_n)中，即寻找变换：
+RoPE主要借助了复数的思想，为了引入复数，首先假设了在加入位置信息之前，原有的编码向量是二维行向量$q_m$和$k_n$，其中$m$和$n$是绝对位置，现在需要构造一个变换，将$m$和$n$引入到$q_m$和$k_n$中，即寻找变换：
 $$
 \tilde{q_m}=f(q, m), \tilde{k_n}=f(k, n)
 $$
@@ -122,13 +123,13 @@ $$
 \operatorname{Attention}(Q, K, V)=\operatorname{softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right) V
 $$
 
-所以，寻求的这个![f(*)](https://latex.codecogs.com/gif.latex?f%28*%29)变换，应该具有特性：
+所以，寻求的这个$f(*)$变换，应该具有特性：
 $$
 \langle f(q, m), f(k, n)\rangle=g(q, k, m-n)
 $$
 
-这里直接说结论，寻求的变换就是![q_me^{im\theta}](https://latex.codecogs.com/gif.latex?q_me%5E%7Bim%5Ctheta%7D)
-也就是给![q_m](https://latex.codecogs.com/gif.latex?q_m)乘以![e^{im\theta}](https://latex.codecogs.com/gif.latex?e%5E%7Bim%5Ctheta%7D)，相应地，![k_n](https://latex.codecogs.com/gif.latex?k_n)乘以![e^{in\theta}](https://latex.codecogs.com/gif.latex?e%5E%7Bin%5Ctheta%7D)
+这里直接说结论，寻求的变换就是$q_me^{im\theta}$
+也就是给$q_m$乘以$e^{im\theta}$，相应地，$k_n$乘以$e^{in\theta}$
 
 做了这样一个变换之后，根据复数的特性，有：
 $$
@@ -141,11 +142,11 @@ $$
 $$
 
 
-这样一来，内积的结果就只依赖于![(m-n)](https://latex.codecogs.com/gif.latex?%28m-n%29)，也就是相对位置了
+这样一来，内积的结果就只依赖于$(m-n)$，也就是相对位置了
 
 换言之，经过这样一番操作，通过给Embedding添加绝对位置信息，可以使得两个token的编码，经过内积变换（self-attn）之后，得到结果是受它们位置的差值，即相对位置影响的
 
-于是对于任意的位置为![m](https://latex.codecogs.com/gif.latex?m)的二维向量![[x, y]](https://latex.codecogs.com/gif.latex?%5Bx%2C%20y%5D)，把它看做复数，乘以![e^{im\theta}](https://latex.codecogs.com/gif.latex?e%5E%7Bim%5Ctheta%7D)，而根据欧拉公式，有：
+于是对于任意的位置为$m$的二维向量$[x, y]$，把它看做复数，乘以$e^{im\theta}$，而根据欧拉公式，有：
 $$
 e^{i m \theta}=\cos m \theta+i \sin m \theta
 $$
@@ -166,7 +167,7 @@ q_1
 \end{array}\right]
 $$
 
-而这个变换的几何意义，就是在二维坐标系下，对向量![(q_0, q_1)](https://latex.codecogs.com/gif.latex?%28q_0%2C%20q_1%29)进行了旋转，因而这种位置编码方法，被称为旋转位置编码
+而这个变换的几何意义，就是在二维坐标系下，对向量$(q_0, q_1)$进行了旋转，因而这种位置编码方法，被称为旋转位置编码
 
 根据刚才的结论，结合内积的线性叠加性，可以将结论推广到高维的情形。可以理解为，每两个维度一组，进行了上述的“旋转”操作，然后再拼接在一起：
 $$
