@@ -3,7 +3,7 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Wangyaqi's personal site [notice:图片浏览须科学上网,公式渲染需要刷新]
+title: Wangyaqi's personal site <span style="color:wheat;font-size:x-small">图片浏览须科学上网,公式渲染需要刷新</span>
 subtitle: 'about study notes'
 description: 'about study notes'
 keywords:
